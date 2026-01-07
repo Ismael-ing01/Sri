@@ -1,0 +1,82 @@
+### 0. INICIAR SESIÓN (Obtener Token)
+# 1. Ejecuta esta petición primero.
+# 2. Copia el "token" de la respuesta.
+# 3. Reemplaza {{authToken}} en las siguientes peticiones.
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin", 
+  "password": "password"
+}
+
+### Variable de Token
+@authToken = TU_TOKEN_AQUI
+
+### 1. Crear Cliente con CÉDULA Válida (Juan Pérez)
+POST http://localhost:8080/api/v1/clientes
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "tipoIdentificacion": "CEDULA",
+  "identificacion": "1710034065",
+  "nombre": "Juan",
+  "apellido": "Pérez",
+  "direccion": "Av. Amazonas y Naciones Unidas",
+  "email": "juan.perez@email.com",
+  "telefono": "0991234567"
+}
+
+### 2. Crear Cliente con RUC Válido (Persona Natural)
+POST http://localhost:8080/api/v1/clientes
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "tipoIdentificacion": "RUC",
+  "identificacion": "1710034065001",
+  "nombre": "Juan",
+  "apellido": "Pérez",
+  "direccion": "Av. 6 de Diciembre",
+  "email": "consultas@juanperez.com",
+  "telefono": "022555555"
+}
+
+### 3. Crear Cliente con CÉDULA INVALIDA (Para probar el error)
+POST http://localhost:8080/api/v1/clientes
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "tipoIdentificacion": "CEDULA",
+  "identificacion": "1234567890", 
+  "nombre": "Usuario",
+  "apellido": "Invalido",
+  "direccion": "Sin Direccion",
+  "email": "error@test.com",
+  "telefono": "0999999999"
+}
+
+### 4. Listar Clientes (Sin Paginación)
+GET http://localhost:8080/api/v1/clientes
+Authorization: Bearer {{authToken}}
+
+### 5. Actualizar Cliente
+PUT http://localhost:8080/api/v1/clientes/1
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "tipoIdentificacion": "CEDULA",
+  "identificacion": "1710034065",
+  "nombre": "Juan Modificado",
+  "apellido": "Pérez",
+  "direccion": "Nueva Direccion 123",
+  "email": "juan.nuevo@email.com",
+  "telefono": "0987654321"
+}
+
+### 6. Eliminar Cliente
+DELETE http://localhost:8080/api/v1/clientes/1
+Authorization: Bearer {{authToken}}
