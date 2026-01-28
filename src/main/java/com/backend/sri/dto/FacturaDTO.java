@@ -15,7 +15,7 @@ public class FacturaDTO {
     @Data
     @Builder
     public static class Request {
-        @NotNull(message = "El cliente es obligatorio")
+        // Opcional: Si es nulo, el backend asignará Consumidor Final
         private Long clienteId;
 
         @NotNull(message = "La forma de pago es obligatoria")

@@ -20,6 +20,7 @@ import java.util.List;
 public class FacturaController {
 
     private final FacturaService facturaService;
+    private final com.backend.sri.service.PdfService pdfService;
 
     @PostMapping
     @Operation(summary = "Crear nueva factura")
@@ -59,10 +60,37 @@ public class FacturaController {
 
     @PostMapping("/{id}/enviar-sri")
     @Operation(summary = "Firmar y Enviar Factura al SRI", responses = {
-            @ApiResponse(responseCode = "200", description = "Proceso completo (Respuesta SOAP SRI)"),
-            @ApiResponse(responseCode = "400", description = "Error en envío")
+            @ApiResponse(responseCode = "200", description = "Proceso completo"),
+            @ApiResponse(responseCode = "500", description = "Error interno")
     })
-    public ResponseEntity<String> enviarSri(@PathVariable Long id) {
-        return ResponseEntity.ok(facturaService.enviarFacturaSri(id));
+    public ResponseEntity<?> enviarSri(@PathVariable Long id) {
+        try {
+            String resultado = facturaService.enviarFacturaSri(id);
+            java.util.Map<String, Object> response = new java.util.HashMap<>();
+            response.put("message", "Proceso enviado al SRI");
+            response.put("sriResponse", resultado);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            java.util.Map<String, String> error = new java.util.HashMap<>();
+            error.put("message", "Error al enviar al SRI: " + e.getMessage());
+            return ResponseEntity.status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+    }
+
+    @GetMapping(value = "/{id}/pdf", produces = "application/pdf")
+    @Operation(summary = "Generar RIDE (PDF)", responses = {
+            @ApiResponse(responseCode = "200", description = "PDF generado exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Factura no encontrada")
+    })
+    public ResponseEntity<byte[]> generatePdf(@PathVariable Long id) {
+        com.backend.sri.model.Factura factura = facturaService.getEntityById(id);
+        byte[] pdfContent = pdfService.generateFacturaPdf(factura);
+
+        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+        headers.setContentType(org.springframework.http.MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("filename", "factura-" + factura.getSecuencial() + ".pdf");
+        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+
+        return new ResponseEntity<>(pdfContent, headers, org.springframework.http.HttpStatus.OK);
     }
 }

@@ -120,6 +120,7 @@ public class FacturaXmlMapperImpl implements FacturaXmlMapper {
 
         return DetalleXML.builder()
                 .codigoPrincipal(d.getProducto().getCodigoPrincipal())
+                .codigoAuxiliar(d.getProducto().getCodigoPrincipal()) // Fallback: mismo que principal
                 .descripcion(d.getProducto().getNombre())
                 .cantidad(BigDecimal.valueOf(d.getCantidad()).setScale(2, RoundingMode.HALF_UP))
                 .precioUnitario(d.getPrecioUnitario().setScale(2, RoundingMode.HALF_UP))

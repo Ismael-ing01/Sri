@@ -56,7 +56,7 @@ public class InfoFactura {
     @XmlElement(required = true)
     private BigDecimal totalDescuento;
 
-    @XmlElementWrapper(name = "totalImpuestos")
+    @XmlElementWrapper(name = "totalConImpuestos")
     @XmlElement(name = "totalImpuesto")
     private List<TotalImpuestoXML> totalImpuestos;
 

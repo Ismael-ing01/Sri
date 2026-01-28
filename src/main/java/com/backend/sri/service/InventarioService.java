@@ -25,7 +25,6 @@ public class InventarioService {
     private final BodegaRepository bodegaRepository;
 
     @Transactional
-
     public InventarioDTO.Response ajustarStock(InventarioDTO.AdjustmentRequest request) {
         Producto producto = productoRepository.findById(request.getProductoId())
                 .orElseThrow(() -> new ResourceNotFoundException(

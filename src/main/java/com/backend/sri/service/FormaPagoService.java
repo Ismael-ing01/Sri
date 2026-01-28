@@ -31,6 +31,7 @@ public class FormaPagoService {
             saveIfNotExists("19", "TARJETA DE CRÉDITO");
             saveIfNotExists("20", "OTROS CON UTILIZACION DEL SISTEMA FINANCIERO");
             saveIfNotExists("21", "ENDOSO DE TÍTULOS");
+
         }
     }
 

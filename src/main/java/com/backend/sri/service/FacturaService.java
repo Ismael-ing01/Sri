@@ -39,10 +39,28 @@ public class FacturaService {
 
     @Transactional
     public FacturaDTO.Response create(FacturaDTO.Request request) {
-        // ... (Validations 1-3 remain same)
-        // 1. Validar Cliente
-        Cliente cliente = clienteRepository.findById(request.getClienteId())
-                .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado"));
+        // 1. Validar Cliente (Logica Consumidor Final)
+        Cliente cliente;
+        if (request.getClienteId() != null) {
+            cliente = clienteRepository.findById(request.getClienteId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Cliente no encontrado con ID: " + request.getClienteId()));
+        } else {
+            // Si no viene cliente, buscamos o creamos el Consumidor Final (9999999999999)
+            cliente = clienteRepository.findByIdentificacion("9999999999999")
+                    .orElseGet(() -> {
+                        Cliente nuevoConsumidor = Cliente.builder()
+                                .identificacion("9999999999999")
+                                .nombre("CONSUMIDOR")
+                                .apellido("FINAL")
+                                .tipoIdentificacion(com.backend.sri.model.enums.TipoIdentificacion.CONSUMIDOR_FINAL)
+                                .email("consumidor@final.com")
+                                .direccion("S/N")
+                                .telefono("9999999999")
+                                .build();
+                        return clienteRepository.save(nuevoConsumidor);
+                    });
+        }
 
         // 2. Validar Forma Pago
         FormaPago formaPago = formaPagoRepository.findById(request.getFormaPagoId())
@@ -115,7 +133,6 @@ public class FacturaService {
             BigDecimal ivaItem = BigDecimal.ZERO;
             if (Boolean.TRUE.equals(producto.getTieneIva())) {
                 subtotal12 = subtotal12.add(precioTotalSinImpuesto);
-                // [CHANGED] Use dynamic percentage
                 ivaItem = precioTotalSinImpuesto.multiply(porcentajeIva);
                 totalIva = totalIva.add(ivaItem);
             } else {
@@ -161,9 +178,14 @@ public class FacturaService {
 
     @Transactional(readOnly = true)
     public FacturaDTO.Response findById(Long id) {
-        Factura factura = facturaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Factura no encontrada ID: " + id));
+        Factura factura = getEntityById(id);
         return mapToResponse(factura);
+    }
+
+    @Transactional(readOnly = true)
+    public Factura getEntityById(Long id) {
+        return facturaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Factura no encontrada ID: " + id));
     }
 
     private FacturaDTO.Response mapToResponse(Factura f) {
@@ -237,6 +259,9 @@ public class FacturaService {
 
             // 2. Firmar XML
             byte[] xmlFirmado = firmaElectronicaService.firmarXml(xmlContent, empresa);
+            // byte[] xmlFirmado =
+            // xmlContent.getBytes(java.nio.charset.StandardCharsets.UTF_8); // BYPASS
+            // TEMPORAL
 
             // (Opcional: Guardar en disco para debug)
             // Files.write(Paths.get("firmados/" + factura.getClaveAcceso() + ".xml"),
